@@ -1,0 +1,37 @@
+:root {
+  --bg: #eff4f3;
+  --heading: white;
+  --text: #1f3441;
+  --muted: #4d6473;
+  --panel-bg: #fffdf8;
+  --panel-border: #d4e1de;
+
+  font-family: 'Avenir Next', Avenir, 'Gill Sans', 'Trebuchet MS', sans-serif;
+  color: var(--text);
+  line-height: 1.4;
+  font-size: 16px;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(255, 185, 120, 0.36), transparent 55%),
+    radial-gradient(circle at 90% 12%, rgba(127, 205, 255, 0.32), transparent 45%),
+    var(--bg);
+}
+
+#root {
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--heading);
+}

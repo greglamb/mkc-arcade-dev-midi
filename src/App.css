@@ -1,0 +1,248 @@
+.app-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1.75rem;
+}
+
+.hero {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 117, 70, 0.38), transparent 52%),
+    radial-gradient(circle at 82% 32%, rgba(89, 188, 255, 0.32), transparent 50%),
+    linear-gradient(135deg, #11273a 0%, #1e4f67 49%, #2a8169 100%);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f3fff4;
+  padding: 2.25rem;
+  box-shadow: 0 24px 50px rgba(16, 38, 54, 0.35);
+}
+
+.eyebrow {
+  font-size: 0.74rem;
+  letter-spacing: 0.14rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 5vw, 2.7rem);
+  line-height: 1.05;
+  max-width: 14ch;
+}
+
+.hero-copy {
+  margin-top: 0.85rem;
+  max-width: 56ch;
+  color: rgba(243, 255, 244, 0.84);
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 1rem;
+  padding: 1.15rem;
+  box-shadow: 0 10px 24px rgba(4, 27, 41, 0.08);
+}
+
+.upload-label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.upload-title {
+  color: var(--heading);
+  font-weight: 700;
+}
+
+.upload-subtitle {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.upload-label input {
+  margin-top: 0.4rem;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 1.16rem;
+}
+
+.panel-head p {
+  color: var(--muted);
+  margin: 0.45rem 0 0.85rem;
+}
+
+.track-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.track-card {
+  border: 1px solid var(--panel-border);
+  border-radius: 0.75rem;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.44);
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.track-card--drum {
+  background: rgba(255, 243, 225, 0.7);
+  border-color: #d4a84b;
+}
+
+.drum-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 0.65rem;
+  cursor: pointer;
+}
+
+.drum-toggle input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #c47a10;
+}
+
+.drum-info {
+  font-size: 0.88rem;
+  color: #7a530a;
+  margin: 0;
+  font-style: italic;
+}
+
+.transpose-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.transpose-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.transpose-row input[type='number'] {
+  margin-top: 0;
+}
+
+.unit-label {
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.track-meta h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.track-meta p {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+select,
+input[type='number'],
+textarea,
+.action,
+input[type='file'] {
+  font: inherit;
+}
+
+select,
+input[type='number'] {
+  margin-top: 0.35rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 0.55rem;
+  padding: 0.48rem 0.6rem;
+  background: #fff;
+}
+
+select {
+  width: 100%;
+}
+
+input[type='number'] {
+  width: 6rem;
+}
+
+.action {
+  border: 0;
+  border-radius: 0.7rem;
+  padding: 0.62rem 1rem;
+  margin-top: 1rem;
+  background: linear-gradient(90deg, #085f74, #0d847b);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--panel-border);
+  border-radius: 0.75rem;
+  background: #f4f7fb;
+  padding: 0.85rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.status {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+}
+
+.status.error {
+  color: #8f1f24;
+}
+
+.status.success {
+  color: #1e6b35;
+}
+
+.notes-panel ul {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+}
+
+.preview-panel {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.preview-iframe {
+  width: 100%;
+  height: min(72vh, 560px);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 0.95rem;
+  }
+
+  .hero {
+    padding: 1.3rem;
+  }
+}
