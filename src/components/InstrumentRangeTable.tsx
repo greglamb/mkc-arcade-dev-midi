@@ -61,7 +61,7 @@ export function InstrumentRangeTable() {
 
     setPlayingDrumIndex(drumIndex)
 
-    const audioPath = `/samples/drum_instruments/drum_instrument_${drumIndex}_${drumName.toLowerCase().replace(/\s+/g, '_')}.wav`
+    const audioPath = `./samples/drum_instruments/drum_instrument_${drumIndex}_${drumName.toLowerCase().replace(/\s+/g, '_')}.wav`
 
     if (audioRef.current) {
       audioRef.current.src = audioPath
@@ -112,7 +112,7 @@ export function InstrumentRangeTable() {
                       <td>{instrument.midiRange}</td>
                       <td>
                         <a
-                          href={`/${instrument.name}-samples.zip`}
+                          href={`./${instrument.name}-samples.zip`}
                           download
                           className="download-link"
                           title={`Download ${instrument.name} samples`}
@@ -130,7 +130,7 @@ export function InstrumentRangeTable() {
               <div className="drum-header">
                 <h3>Drum Sounds</h3>
                 <a
-                  href="/Drum-samples.zip"
+                  href="./Drum-samples.zip"
                   download
                   className="download-link"
                   title="Download all drum samples"
