@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 interface InstrumentInfo {
   name: string
@@ -48,8 +48,30 @@ const INSTRUMENT_INFO: InstrumentInfo[] = [
 
 export function InstrumentRangeTable() {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [playingDrumIndex, setPlayingDrumIndex] = useState<number | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const melodicInstruments = INSTRUMENT_INFO.filter(i => i.type === 'melodic')
   const drumSounds = INSTRUMENT_INFO.filter(i => i.type === 'drum')
+
+  const playDrumSound = async (drumIndex: number, drumName: string) => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
+
+    setPlayingDrumIndex(drumIndex)
+
+    const audioPath = `/samples/drum_instruments/drum_instrument_${drumIndex}_${drumName.toLowerCase().replace(/\s+/g, '_')}.wav`
+
+    if (audioRef.current) {
+      audioRef.current.src = audioPath
+      try {
+        await audioRef.current.play()
+      } catch (error) {
+        console.error('Failed to play audio:', error)
+      }
+    }
+  }
 
   return (
     <section className="instrument-range-section">
@@ -79,6 +101,7 @@ export function InstrumentRangeTable() {
                     <th>Instrument</th>
                     <th>Note Range</th>
                     <th>MIDI Notes</th>
+                    <th>Download</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -87,6 +110,16 @@ export function InstrumentRangeTable() {
                       <td>{instrument.name}</td>
                       <td>{instrument.noteRange}</td>
                       <td>{instrument.midiRange}</td>
+                      <td>
+                        <a
+                          href={`/${instrument.name}-samples.zip`}
+                          download
+                          className="download-link"
+                          title={`Download ${instrument.name} samples`}
+                        >
+                          ⬇ Samples
+                        </a>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -94,21 +127,41 @@ export function InstrumentRangeTable() {
             </div>
 
             <div className="table-container">
-              <h3>Drum Sounds</h3>
+              <div className="drum-header">
+                <h3>Drum Sounds</h3>
+                <a
+                  href="/Drum-samples.zip"
+                  download
+                  className="download-link"
+                  title="Download all drum samples"
+                >
+                  ⬇ Download All
+                </a>
+              </div>
               <table className="instrument-table">
                 <thead>
                   <tr>
                     <th>Drum Sound</th>
                     <th>Note Range</th>
                     <th>MIDI Note</th>
+                    <th>Preview</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {drumSounds.map(drum => (
+                  {drumSounds.map((drum) => (
                     <tr key={drum.name}>
                       <td>{drum.name}</td>
                       <td>{drum.noteRange}</td>
                       <td>{drum.midiRange}</td>
+                      <td>
+                        <button
+                          className={`play-button ${playingDrumIndex === parseInt(drum.midiRange) ? 'playing' : ''}`}
+                          onClick={() => playDrumSound(parseInt(drum.midiRange), drum.name)}
+                          title="Play preview"
+                        >
+                          ▶ Play
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -117,6 +170,7 @@ export function InstrumentRangeTable() {
           </div>
         </>
       )}
+      <audio ref={audioRef} onEnded={() => setPlayingDrumIndex(null)} />
     </section>
   )
 }

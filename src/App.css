@@ -276,6 +276,39 @@ textarea {
   opacity: 0.7;
 }
 
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #085f74;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.download-link:hover {
+  background: #f0f7fa;
+  border-color: #085f74;
+}
+
+.drum-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.drum-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
 .instrument-range-note {
   margin: 0 0 1.25rem;
   padding: 0.75rem 1rem;
@@ -334,6 +367,28 @@ textarea {
 
 .instrument-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.play-button {
+  border: 1px solid var(--panel-border);
+  background: #fff;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #085f74;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.play-button:hover {
+  background: #f0f7fa;
+  border-color: #085f74;
+}
+
+.play-button.playing {
+  background: #085f74;
+  color: white;
 }
 
 @media (max-width: 760px) {
