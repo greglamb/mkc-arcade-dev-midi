@@ -36,8 +36,8 @@ function App() {
       setError('')
       setOutput('')
       setCopyState('idle')
-      setTransposeOctaves(0)
-      setDrumTransposeOctaves(0)
+      setTransposeOctaves(-3)
+      setDrumTransposeOctaves(-2)
       const initialDrumIds = new Set<number>()
 
       const parsed = await parseMidiFiles(files)
