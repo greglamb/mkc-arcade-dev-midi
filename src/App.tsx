@@ -10,6 +10,7 @@ import { FileUploadPanel } from './components/FileUploadPanel'
 import { TracksPanel } from './components/TracksPanel'
 import { OutputPanel } from './components/OutputPanel'
 import { MakeCodeSongPreview } from './components/MakeCodeSongPreview'
+import { InstrumentRangeTable } from './components/InstrumentRangeTable'
 
 function App() {
   const [parsedMidi, setParsedMidi] = useState<ParsedMidiSummary | null>(null)
@@ -119,6 +120,8 @@ function App() {
           TypeScript snippet.
         </p>
       </header>
+
+      <InstrumentRangeTable />
 
       <FileUploadPanel isLoading={isLoading} error={error} onFilesSelected={handleFilesSelected} />
 

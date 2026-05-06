@@ -29,6 +29,7 @@
   font-size: clamp(1.7rem, 5vw, 2.7rem);
   line-height: 1.05;
   max-width: 14ch;
+  color: white;
 }
 
 .hero-copy {
@@ -51,7 +52,7 @@
 }
 
 .upload-title {
-  color: var(--heading);
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -238,6 +239,103 @@ textarea {
   background: #fff;
 }
 
+.instrument-range-section {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 24px rgba(4, 27, 41, 0.08);
+}
+
+.instrument-range-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.instrument-range-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.collapse-toggle {
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  color: var(--text);
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.collapse-toggle:hover {
+  opacity: 0.7;
+}
+
+.instrument-range-note {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  background: rgba(8, 95, 116, 0.05);
+  border-left: 3px solid rgba(8, 95, 116, 0.2);
+  border-radius: 0.4rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.instrument-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 2rem;
+}
+
+.table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.table-container h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.instrument-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.92rem;
+}
+
+.instrument-table thead {
+  background: rgba(8, 95, 116, 0.08);
+  border-bottom: 2px solid var(--panel-border);
+}
+
+.instrument-table th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.instrument-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--panel-border);
+  color: var(--text);
+}
+
+.instrument-table tbody tr:hover {
+  background: rgba(8, 95, 116, 0.04);
+}
+
+.instrument-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 @media (max-width: 760px) {
   .app-shell {
     padding: 0.95rem;
@@ -245,5 +343,10 @@ textarea {
 
   .hero {
     padding: 1.3rem;
+  }
+
+  .instrument-tables {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 }
