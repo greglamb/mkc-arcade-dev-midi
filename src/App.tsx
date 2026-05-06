@@ -3,10 +3,12 @@ import './App.css'
 import {
   buildMakeCodeSongSnippet,
   guessInstrumentPreset,
-  MAKECODE_MELODIC_INSTRUMENT_PRESETS,
   parseMidiFiles,
   type ParsedMidiSummary,
 } from './lib/makecodeSong'
+import { FileUploadPanel } from './components/FileUploadPanel'
+import { TracksPanel } from './components/TracksPanel'
+import { OutputPanel } from './components/OutputPanel'
 import { MakeCodeSongPreview } from './components/MakeCodeSongPreview'
 
 function App() {
@@ -20,17 +22,12 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
 
-  const totalNotes = useMemo(
-    () => parsedMidi?.tracks.reduce((sum, track) => sum + track.noteCount, 0) || 0,
-    [parsedMidi],
-  )
-
   const generatedSongHex = useMemo(() => {
     const match = /hex`([a-fA-F0-9]+)`/.exec(output)
     return match?.[1] || ''
   }, [output])
 
-  const handleFileSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilesSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files ? Array.from(event.target.files) : []
     if (!files.length) return
 
@@ -41,7 +38,7 @@ function App() {
       setCopyState('idle')
       setTransposeOctaves(0)
       setDrumTransposeOctaves(0)
-      const drumTrackIds = new Set<number>();
+      const initialDrumIds = new Set<number>()
 
       const parsed = await parseMidiFiles(files)
       setParsedMidi(parsed)
@@ -50,12 +47,12 @@ function App() {
       parsed.tracks.forEach((track, index) => {
         defaults[track.id] = guessInstrumentPreset(track.name, index)
         if (track.name.toLowerCase().includes('drum') || track.name.toLowerCase().includes('percussion')) {
-          drumTrackIds.add(track.id)
+          initialDrumIds.add(track.id)
         }
       })
 
       setInstrumentAssignments(defaults)
-      setDrumTrackIds(drumTrackIds)
+      setDrumTrackIds(initialDrumIds)
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Failed to parse MIDI files.'
       setParsedMidi(null)
@@ -65,6 +62,19 @@ function App() {
       setIsLoading(false)
       event.target.value = ''
     }
+  }
+
+  const handleInstrumentChange = (trackId: number, presetId: string) => {
+    setInstrumentAssignments((current) => ({ ...current, [trackId]: presetId }))
+  }
+
+  const handleDrumToggle = (trackId: number, isDrum: boolean) => {
+    setDrumTrackIds((prev) => {
+      const next = new Set(prev)
+      if (isDrum) next.add(trackId)
+      else next.delete(trackId)
+      return next
+    })
   }
 
   const generateSong = () => {
@@ -110,150 +120,29 @@ function App() {
         </p>
       </header>
 
-      <section className="panel upload-panel">
-        <label className="upload-label" htmlFor="midi-file">
-          <span className="upload-title">Select MIDI File(s)</span>
-          <span className="upload-subtitle">Supports standard .mid and .midi files and combines them into one song</span>
-          <input
-            id="midi-file"
-            type="file"
-            accept=".mid,.midi,audio/midi,audio/x-midi"
-            multiple
-            onChange={handleFileSelected}
-            disabled={isLoading}
-          />
-        </label>
-        {isLoading && <p className="status">Parsing MIDI files...</p>}
-        {error && <p className="status error">{error}</p>}
-      </section>
+      <FileUploadPanel isLoading={isLoading} error={error} onFilesSelected={handleFilesSelected} />
 
       {parsedMidi && (
-        <section className="panel tracks-panel">
-          <div className="panel-head">
-            <h2>Track Instrument Mapping</h2>
-            <p>
-              {parsedMidi.fileNames.length} file(s) · {parsedMidi.tracks.length} tracks · {totalNotes} notes ·{' '}
-              {parsedMidi.beatsPerMinute} BPM
-            </p>
-          </div>
-
-          <div className="transpose-row">
-            <label>
-              Transpose Melodic Tracks
-              <input
-                type="number"
-                min={-4}
-                max={4}
-                step={1}
-                value={transposeOctaves}
-                onChange={(event) => {
-                  const next = Number(event.target.value)
-                  setTransposeOctaves(Number.isNaN(next) ? 0 : Math.max(-4, Math.min(4, next)))
-                }}
-              />
-              <span className="unit-label">octaves</span>
-            </label>
-            <label>
-              Transpose Drum Tracks
-              <input
-                type="number"
-                min={-4}
-                max={4}
-                step={1}
-                value={drumTransposeOctaves}
-                onChange={(event) => {
-                  const next = Number(event.target.value)
-                  setDrumTransposeOctaves(Number.isNaN(next) ? 0 : Math.max(-4, Math.min(4, next)))
-                }}
-              />
-              <span className="unit-label">octaves</span>
-            </label>
-          </div>
-
-          <div className="track-grid">
-            {parsedMidi.tracks.map((track) => (
-              <article
-                key={track.id}
-                className={`track-card${drumTrackIds.has(track.id) ? ' track-card--drum' : ''}`}
-              >
-                <div className="track-meta">
-                  <h3>{track.name}</h3>
-                  <p>
-                    Notes: {track.noteCount} · MIDI: {track.minMidiNote}-{track.maxMidiNote}
-                    {track.channel !== null && ` · Ch ${track.channel + 1}`}
-                  </p>
-                </div>
-                <label className="drum-toggle">
-                  <input
-                    type="checkbox"
-                    checked={drumTrackIds.has(track.id)}
-                    onChange={(event) => {
-                      setDrumTrackIds((prev) => {
-                        const next = new Set(prev)
-                        if (event.target.checked) next.add(track.id)
-                        else next.delete(track.id)
-                        return next
-                      })
-                    }}
-                  />
-                  Drum track
-                </label>
-                {!drumTrackIds.has(track.id) && (
-                  <label>
-                    MakeCode Instrument
-                    <select
-                      value={instrumentAssignments[track.id] || MAKECODE_MELODIC_INSTRUMENT_PRESETS[0].id}
-                      onChange={(event) => {
-                        const next = event.target.value
-                        setInstrumentAssignments((current) => ({
-                          ...current,
-                          [track.id]: next,
-                        }))
-                      }}
-                    >
-                      {MAKECODE_MELODIC_INSTRUMENT_PRESETS.map((preset) => (
-                        <option key={preset.id} value={preset.id}>
-                          {preset.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-                {drumTrackIds.has(track.id) && (
-                  <p className="drum-info">Uses MakeCode built-in drum kit</p>
-                )}
-              </article>
-            ))}
-          </div>
-
-          <button type="button" className="action" onClick={generateSong}>
-            Generate MakeCode Song Snippet
-          </button>
-        </section>
+        <TracksPanel
+          parsedMidi={parsedMidi}
+          instrumentAssignments={instrumentAssignments}
+          drumTrackIds={drumTrackIds}
+          transposeOctaves={transposeOctaves}
+          drumTransposeOctaves={drumTransposeOctaves}
+          onInstrumentChange={handleInstrumentChange}
+          onDrumToggle={handleDrumToggle}
+          onTransposeChange={setTransposeOctaves}
+          onDrumTransposeChange={setDrumTransposeOctaves}
+          onGenerate={generateSong}
+        />
       )}
 
-      <section className="panel output-panel">
-        <div className="panel-head">
-          <h2>MakeCode Arcade Output</h2>
-          <p>Copy this and paste it into your MakeCode Arcade TypeScript project.</p>
-        </div>
-
-        <textarea
-          value={output}
-          onChange={(event) => setOutput(event.target.value)}
-          placeholder="Generated TypeScript appears here after conversion..."
-          spellCheck={false}
-          rows={14}
-        />
-
-        <button type="button" className="action" onClick={copyToClipboard} disabled={!output}>
-          Copy to Clipboard
-        </button>
-        {copyState === 'copied' && <p className="status success">Copied.</p>}
-        {copyState === 'failed' && (
-          <p className="status error">Clipboard failed. Select and copy manually.</p>
-        )}
-      </section>
+      <OutputPanel
+        output={output}
+        copyState={copyState}
+        onOutputChange={setOutput}
+        onCopy={copyToClipboard}
+      />
 
       {generatedSongHex && <MakeCodeSongPreview songHex={generatedSongHex} />}
     </main>
