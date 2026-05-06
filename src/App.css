@@ -253,6 +253,12 @@ textarea {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.75rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
 }
 
 .instrument-range-header h2 {
@@ -261,25 +267,16 @@ textarea {
   color: var(--text);
 }
 
-.collapse-toggle {
-  border: none;
-  background: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
+.instrument-range-header i {
   color: var(--text);
+  font-size: 1rem;
   flex-shrink: 0;
-  transition: opacity 0.2s;
-}
-
-.collapse-toggle:hover {
-  opacity: 0.7;
 }
 
 .download-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
   color: #085f74;
   text-decoration: none;
   font-weight: 600;
@@ -295,12 +292,17 @@ textarea {
   border-color: #085f74;
 }
 
+.download-link i {
+  width: 0.9em;
+}
+
 .drum-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.75rem;
+  min-height: 2rem;
 }
 
 .drum-header h3 {
@@ -379,6 +381,9 @@ textarea {
   cursor: pointer;
   color: #085f74;
   transition: background 0.2s, border-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .play-button:hover {
@@ -389,6 +394,10 @@ textarea {
 .play-button.playing {
   background: #085f74;
   color: white;
+}
+
+.play-button i {
+  width: 0.9em;
 }
 
 @media (max-width: 760px) {

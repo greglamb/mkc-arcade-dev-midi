@@ -75,16 +75,14 @@ export function InstrumentRangeTable() {
 
   return (
     <section className="instrument-range-section">
-      <div className="instrument-range-header">
+      <button
+        className="instrument-range-header"
+        onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+      >
         <h2>MakeCode Builtin Instrument & Drum Ranges</h2>
-        <button
-          className="collapse-toggle"
-          onClick={() => setIsExpanded(!isExpanded)}
-          aria-expanded={isExpanded}
-        >
-          {isExpanded ? '▼' : '▶'}
-        </button>
-      </div>
+        <i className={`fas fa-chevron-${isExpanded ? 'down' : 'right'}`}></i>
+      </button>
 
       {isExpanded && (
         <>
@@ -94,7 +92,9 @@ export function InstrumentRangeTable() {
 
           <div className="instrument-tables">
             <div className="table-container">
-              <h3>Melodic Instruments</h3>
+              <div className="drum-header">
+                <h3>Melodic Instruments</h3>
+              </div>
               <table className="instrument-table">
                 <thead>
                   <tr>
@@ -117,7 +117,7 @@ export function InstrumentRangeTable() {
                           className="download-link"
                           title={`Download ${instrument.name} samples`}
                         >
-                          ⬇ Samples
+                          <i className="fas fa-download"></i> Samples
                         </a>
                       </td>
                     </tr>
@@ -135,7 +135,7 @@ export function InstrumentRangeTable() {
                   className="download-link"
                   title="Download all drum samples"
                 >
-                  ⬇ Download All
+                  <i className="fas fa-download"></i> Download All
                 </a>
               </div>
               <table className="instrument-table">
@@ -159,7 +159,7 @@ export function InstrumentRangeTable() {
                           onClick={() => playDrumSound(parseInt(drum.midiRange), drum.name)}
                           title="Play preview"
                         >
-                          ▶ Play
+                          <i className="fas fa-play"></i> Play
                         </button>
                       </td>
                     </tr>
