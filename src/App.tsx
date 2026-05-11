@@ -18,6 +18,7 @@ function App() {
   const [drumTrackIds, setDrumTrackIds] = useState<Set<number>>(new Set())
   const [transposeOctaves, setTransposeOctaves] = useState(0)
   const [drumTransposeOctaves, setDrumTransposeOctaves] = useState(0)
+  const [beatsPerMinute, setBeatsPerMinute] = useState(120)
   const [output, setOutput] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -43,6 +44,7 @@ function App() {
 
       const parsed = await parseMidiFiles(files)
       setParsedMidi(parsed)
+      setBeatsPerMinute(parsed.beatsPerMinute)
 
       const defaults: Record<number, string> = {}
       parsed.tracks.forEach((track, index) => {
@@ -90,6 +92,7 @@ function App() {
         transposeOctaves,
         drumTransposeOctaves,
         drumTrackIds,
+        beatsPerMinute,
       })
       setOutput(snippet)
       setCopyState('idle')
@@ -132,10 +135,12 @@ function App() {
           drumTrackIds={drumTrackIds}
           transposeOctaves={transposeOctaves}
           drumTransposeOctaves={drumTransposeOctaves}
+          beatsPerMinute={beatsPerMinute}
           onInstrumentChange={handleInstrumentChange}
           onDrumToggle={handleDrumToggle}
           onTransposeChange={setTransposeOctaves}
           onDrumTransposeChange={setDrumTransposeOctaves}
+          onBeatsPerMinuteChange={setBeatsPerMinute}
           onGenerate={generateSong}
         />
       )}

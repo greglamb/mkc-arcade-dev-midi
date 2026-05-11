@@ -19,6 +19,7 @@ type BuildSongOptions = {
     transposeOctaves?: number
     drumTransposeOctaves?: number
     drumTrackIds?: ReadonlySet<number>
+    beatsPerMinute?: number
 }
 
 export type ParsedMidiSummary = {
@@ -228,6 +229,7 @@ export const buildMakeCodeSongSnippet = (
     const transposeOctaves = options.transposeOctaves || 0
     const drumTransposeOctaves = options.drumTransposeOctaves || 0
     const drumTrackIds = options.drumTrackIds ?? new Set<number>()
+    const beatsPerMinute = Math.max(1, Math.round(options.beatsPerMinute ?? parsed.beatsPerMinute))
 
     const defaultDrums = getEmptySong(1).tracks.find(t => t.drums)?.drums ?? []
     const numDrums = defaultDrums.length || 16
@@ -283,7 +285,7 @@ export const buildMakeCodeSongSnippet = (
     const measures = Math.max(1, Math.ceil(maxTick / ticksPerMeasure))
 
     const song: Song = {
-        beatsPerMinute: parsed.beatsPerMinute,
+        beatsPerMinute,
         beatsPerMeasure: parsed.beatsPerMeasure,
         ticksPerBeat,
         measures,
@@ -299,8 +301,10 @@ export const buildMakeCodeSongSnippet = (
         transposeOctaves === 0 ? '' : `\n// Melodic tracks transposed ${transposeOctaves > 0 ? '+' : ''}${transposeOctaves} octave(s)`
     const drumTransposeLabel =
         drumTransposeOctaves === 0 ? '' : `\n// Drum tracks transposed ${drumTransposeOctaves > 0 ? '+' : ''}${drumTransposeOctaves} octave(s)`
+    const bpmLabel =
+        beatsPerMinute === parsed.beatsPerMinute ? '' : `\n// Tempo set to ${beatsPerMinute} BPM`
 
-    return `// Generated from ${fileLabel}${melodicTransposeLabel}${drumTransposeLabel}\nconst song = music.createSong(hex\`${songHex}\`)\nmusic.play(song, music.PlaybackMode.UntilDone)`
+    return `// Generated from ${fileLabel}${melodicTransposeLabel}${drumTransposeLabel}${bpmLabel}\nconst song = music.createSong(hex\`${songHex}\`)\nmusic.play(song, music.PlaybackMode.UntilDone)`
 }
 
 function isBlackKey(noteNumber: number) {
