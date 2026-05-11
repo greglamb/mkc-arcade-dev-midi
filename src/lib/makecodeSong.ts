@@ -138,12 +138,16 @@ export const extractNoteEvents = (midi: Midi, trackIndex: number, isDrumTrack: b
 
         const spelling = isDrumTrack ? "normal" : (isBlackKey(event.midi) ? "sharp" : "normal");
 
+        const velocity = event.velocity !== undefined ? Math.round(event.velocity * 127) : undefined;
+
         if (existing) {
             existing.notes.push({
                 note: isDrumTrack ? event.midi : event.midi + 1,
                 enharmonicSpelling: spelling
             });
-            // existing.velocity = Math.max(existing.velocity, event.velocity);
+            if (velocity !== undefined) {
+                existing.velocity = Math.max(existing.velocity ?? 0, velocity);
+            }
         }
         else {
             makecodeEvents.push({
@@ -155,7 +159,7 @@ export const extractNoteEvents = (midi: Midi, trackIndex: number, isDrumTrack: b
                 ],
                 startTick: startTick,
                 endTick: endTick,
-                // velocity: event.velocity
+                velocity: velocity
             });
         }
     }

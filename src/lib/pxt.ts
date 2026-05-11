@@ -44,6 +44,7 @@ export interface NoteEvent {
     notes: Note[];
     startTick: number;
     endTick: number;
+    velocity?: number;
 }
 
 export interface Note {
@@ -153,7 +154,11 @@ function encodeSong(song: Song) {
     const encodedTracks = song.tracks
         .filter((track) => track.notes.length > 0)
         .map(encodeTrack);
-    const trackLength = encodedTracks.reduce((d, c) => c.length + d, 0);
+    const encodedTrackVelocities = song.tracks
+        .map(encodeTrackVelocity)
+        .filter((v => !!v));
+
+    const trackLength = (encodedTracks.concat(encodedTrackVelocities)).reduce((d, c) => c.length + d, 0);
 
     const out = new Uint8Array(7 + trackLength);
     out[0] = 0; // encoding version
@@ -169,6 +174,10 @@ function encodeSong(song: Song) {
         current += track.length;
     }
 
+    for (const trackVelocity of encodedTrackVelocities) {
+        out.set(trackVelocity, current);
+        current += trackVelocity.length;
+    }
     return out;
 }
 
@@ -245,6 +254,17 @@ function encodeTrack(track: Track) {
     return encodeMelodicTrack(track);
 }
 
+function encodeTrackVelocity(track: Track) {
+    if (!track.notes.some(note => note.velocity !== undefined && note.velocity < 128)) return undefined;
+
+    const out = new Uint8Array(1 + track.notes.length);
+    out[0] = track.id;
+    for (let i = 0; i < track.notes.length; i++) {
+        out[1 + i] = track.notes[i].velocity || 0;
+    }
+    return out;
+}
+
 function encodeMelodicTrack(track: Track) {
     const encodedInstrument = encodeInstrument(track.instrument!);
     const encodedNotes = track.notes.map(note => encodeNoteEvent(note, track.instrument!.octave!, false));
@@ -312,12 +332,17 @@ function decodeSong(buf: Uint8Array) {
         tracks: []
     };
 
+    const numTracks = buf[6];
     let current = 7;
 
-    while (current < buf.length) {
+    for (let i = 0; i < numTracks; i++) {
         const [track, pointer] = decodeTrack(buf, current);
         current = pointer;
         res.tracks.push(track);
+    }
+
+    while (current < buf.length) {
+        current = decodeTrackVelocity(buf, res.tracks, current);
     }
 
     return res;
@@ -342,11 +367,11 @@ function decodeInstrument(buf: Uint8Array, offset: number): Instrument {
         },
         ampLFO: {
             frequency: buf[offset + 21],
-            amplitude: get16BitNumber(buf, 22)
+            amplitude: get16BitNumber(buf, offset + 22)
         },
         pitchLFO: {
             frequency: buf[offset + 24],
-            amplitude: get16BitNumber(buf, 25)
+            amplitude: get16BitNumber(buf, offset + 25)
         },
         octave: buf[offset + 27]
     }
@@ -358,6 +383,16 @@ function decodeTrack(buf: Uint8Array, offset: number): [Track, number] {
     }
 
     return decodeMelodicTrack(buf, offset);
+}
+
+function decodeTrackVelocity(buf: Uint8Array, tracks: Track[], offset: number): number {
+    const trackId = buf[offset];
+    const track = tracks.find(t => t.id === trackId);
+    if (!track) throw new Error(`Track with id ${trackId} not found`);
+    for (let i = 0; i < track.notes.length; i++) {
+        track.notes[i].velocity = buf[offset + i + 1];
+    }
+    return offset + track.notes.length + 1;
 }
 
 function decodeDrumInstrument(buf: Uint8Array, offset: number): DrumInstrument {
