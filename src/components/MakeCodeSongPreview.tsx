@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-const ASSET_EDITOR_URL = 'https://arcade.makecode.com/--asseteditor'
+const ASSET_EDITOR_URL = 'https://arcade.makecode.com/v4.1.4--asseteditor'
 const ASSET_EDITOR_ORIGIN = 'https://arcade.makecode.com'
 const SONG_ASSET_ID = 'preview_song'
 
