@@ -225,7 +225,7 @@ export const buildMakeCodeSongSnippet = (
     instrumentAssignments: Record<number, string>,
     options: BuildSongOptions = {},
 ): string => {
-    const ticksPerBeat = 8
+    const ticksPerBeat = 16
     const transposeOctaves = options.transposeOctaves || 0
     const drumTransposeOctaves = options.drumTransposeOctaves || 0
     const drumTrackIds = options.drumTrackIds ?? new Set<number>()
