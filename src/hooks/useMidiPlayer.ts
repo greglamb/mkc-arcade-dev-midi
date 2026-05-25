@@ -12,6 +12,7 @@ interface UseMidiPlayerResult {
   play: () => Promise<void>
   pause: () => void
   restart: () => Promise<void>
+  seek: (ms: number) => void
 }
 
 export function useMidiPlayer(rawBuffer: ArrayBuffer | null): UseMidiPlayerResult {
@@ -143,5 +144,13 @@ export function useMidiPlayer(rawBuffer: ArrayBuffer | null): UseMidiPlayerResul
     }
   }, [isPlaying, play])
 
-  return { isPlaying, isLoading, error, elapsedMs, durationMs, play, pause, restart }
+  const seek = useCallback((ms: number) => {
+    const seq = sequencerRef.current
+    if (!seq) return
+    const clamped = Math.max(0, Math.min(ms, durationMs))
+    seq.currentTime = clamped / 1000
+    setElapsedMs(clamped)
+  }, [durationMs])
+
+  return { isPlaying, isLoading, error, elapsedMs, durationMs, play, pause, restart, seek }
 }

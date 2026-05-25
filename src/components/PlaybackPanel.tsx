@@ -21,12 +21,23 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
   }, [parsedMidi.files])
 
   const selected = parsedMidi.files[selectedIndex] ?? parsedMidi.files[0]
-  const { isPlaying, isLoading, error, elapsedMs, durationMs, play, pause, restart } =
+  const { isPlaying, isLoading, error, elapsedMs, durationMs, play, pause, restart, seek } =
     useMidiPlayer(selected?.buffer ?? null)
+
+  const [scrubMs, setScrubMs] = useState<number | null>(null)
 
   if (!parsedMidi.files.length) return null
 
   const transportDisabled = isLoading || Boolean(error)
+  const displayedMs = scrubMs ?? elapsedMs
+  const scrubDisabled = transportDisabled || !durationMs
+
+  const commitScrub = () => {
+    if (scrubMs !== null) {
+      seek(scrubMs)
+      setScrubMs(null)
+    }
+  }
 
   return (
     <section className="panel playback-panel">
@@ -70,8 +81,21 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
           <i className="fa-solid fa-rotate-left" aria-hidden="true" />
           <span>Restart</span>
         </button>
+        <input
+          type="range"
+          className="playback-scrubber"
+          min={0}
+          max={durationMs || 1}
+          step={100}
+          value={displayedMs}
+          aria-label="Seek"
+          onChange={(event) => setScrubMs(Number(event.target.value))}
+          onPointerUp={commitScrub}
+          onKeyUp={commitScrub}
+          disabled={scrubDisabled}
+        />
         <span className="playback-time">
-          {formatTime(elapsedMs)} / {formatTime(durationMs)}
+          {formatTime(displayedMs)} / {formatTime(durationMs)}
         </span>
       </div>
 

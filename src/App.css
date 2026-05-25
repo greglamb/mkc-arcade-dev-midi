@@ -448,8 +448,18 @@ textarea {
   gap: 0.4rem;
 }
 
+.playback-scrubber {
+  flex: 1 1 12rem;
+  min-width: 8rem;
+  cursor: pointer;
+}
+
+.playback-scrubber:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 .playback-time {
-  margin-left: auto;
   font-variant-numeric: tabular-nums;
   font-size: 0.95rem;
   opacity: 0.85;
