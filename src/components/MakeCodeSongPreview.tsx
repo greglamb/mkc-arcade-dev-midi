@@ -61,7 +61,6 @@ export function MakeCodeSongPreview({ songHex }: MakeCodeSongPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const requestIdRef = useRef(1)
 
-  const [isReady, setIsReady] = useState(false)
   const [lastEvent, setLastEvent] = useState('Waiting for editor...')
 
   const { assetId, files } = useMemo(() => buildAssetEditorFiles(songHex), [songHex])
@@ -93,7 +92,6 @@ export function MakeCodeSongPreview({ songHex }: MakeCodeSongPreviewProps) {
 
       if ('kind' in data && data.type === 'event') {
         if (data.kind === 'ready') {
-          setIsReady(true)
           setLastEvent('Asset editor ready')
           openSongAsset();
         } else if (data.kind === 'done-clicked') {
@@ -115,11 +113,6 @@ export function MakeCodeSongPreview({ songHex }: MakeCodeSongPreviewProps) {
     return () => window.removeEventListener('message', onMessage)
   }, [files, openSongAsset, postMessage])
 
-  useEffect(() => {
-    if (!isReady) return
-    openSongAsset()
-  }, [files, isReady, openSongAsset])
-
   return (
     <section className="panel preview-panel">
       <div className="panel-head">
@@ -127,6 +120,7 @@ export function MakeCodeSongPreview({ songHex }: MakeCodeSongPreviewProps) {
         <p>{lastEvent}</p>
       </div>
       <iframe
+        key={assetId}
         ref={iframeRef}
         title="MakeCode Asset Editor Preview"
         src={ASSET_EDITOR_URL}
