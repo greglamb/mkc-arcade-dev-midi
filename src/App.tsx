@@ -11,6 +11,7 @@ import { TracksPanel } from './components/TracksPanel'
 import { OutputPanel } from './components/OutputPanel'
 import { MakeCodeSongPreview } from './components/MakeCodeSongPreview'
 import { InstrumentRangeTable } from './components/InstrumentRangeTable'
+import { PlaybackPanel } from './components/PlaybackPanel'
 
 function App() {
   const [parsedMidi, setParsedMidi] = useState<ParsedMidiSummary | null>(null)
@@ -127,6 +128,8 @@ function App() {
       <InstrumentRangeTable />
 
       <FileUploadPanel isLoading={isLoading} error={error} onFilesSelected={handleFilesSelected} />
+
+      {parsedMidi && <PlaybackPanel parsedMidi={parsedMidi} />}
 
       {parsedMidi && (
         <TracksPanel
