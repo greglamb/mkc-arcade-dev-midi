@@ -21,8 +21,18 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
   }, [parsedMidi.files])
 
   const selected = parsedMidi.files[selectedIndex] ?? parsedMidi.files[0]
-  const { isPlaying, isLoading, error, elapsedMs, durationMs, play, pause, restart, seek } =
-    useMidiPlayer(selected?.buffer ?? null)
+  const {
+    isPlaying,
+    isLoading,
+    error,
+    elapsedMs,
+    durationMs,
+    soundFontProgress,
+    play,
+    pause,
+    restart,
+    seek,
+  } = useMidiPlayer(selected?.buffer ?? null)
 
   const [scrubMs, setScrubMs] = useState<number | null>(null)
 
@@ -98,6 +108,12 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
           {formatTime(displayedMs)} / {formatTime(durationMs)}
         </span>
       </div>
+
+      {!error && !soundFontProgress.done && soundFontProgress.total > 0 && (
+        <p className="status">
+          Loading piano sound… {Math.round((soundFontProgress.loaded / soundFontProgress.total) * 100)}%
+        </p>
+      )}
 
       {error && <p className="status error">{error}</p>}
     </section>

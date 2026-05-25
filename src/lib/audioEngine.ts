@@ -7,14 +7,59 @@ let audioContextPromise: Promise<AudioContext> | null = null
 let synthPromise: Promise<WorkletSynthesizer> | null = null
 let soundFontPromise: Promise<ArrayBuffer> | null = null
 
+export type SoundFontProgress = { loaded: number; total: number; done: boolean }
+type ProgressListener = (progress: SoundFontProgress) => void
+let currentProgress: SoundFontProgress = { loaded: 0, total: 0, done: false }
+const progressListeners = new Set<ProgressListener>()
+
+function emitProgress(next: SoundFontProgress) {
+  currentProgress = next
+  progressListeners.forEach((listener) => listener(next))
+}
+
+export function subscribeSoundFontProgress(listener: ProgressListener): () => void {
+  progressListeners.add(listener)
+  listener(currentProgress)
+  return () => {
+    progressListeners.delete(listener)
+  }
+}
+
 export function prefetchSoundFont(): Promise<ArrayBuffer> {
   if (!soundFontPromise) {
-    soundFontPromise = fetch(SOUNDFONT_URL).then((response) => {
+    soundFontPromise = (async () => {
+      const response = await fetch(SOUNDFONT_URL)
       if (!response.ok) {
         throw new Error(`Failed to load SoundFont (${response.status})`)
       }
-      return response.arrayBuffer()
-    })
+      const total = Number(response.headers.get('content-length') || 0)
+
+      if (!response.body) {
+        const buffer = await response.arrayBuffer()
+        emitProgress({ loaded: buffer.byteLength, total: buffer.byteLength, done: true })
+        return buffer
+      }
+
+      const reader = response.body.getReader()
+      const chunks: Uint8Array[] = []
+      let loaded = 0
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        chunks.push(value)
+        loaded += value.byteLength
+        emitProgress({ loaded, total, done: false })
+      }
+
+      const merged = new Uint8Array(loaded)
+      let offset = 0
+      for (const chunk of chunks) {
+        merged.set(chunk, offset)
+        offset += chunk.byteLength
+      }
+      emitProgress({ loaded, total: loaded, done: true })
+      return merged.buffer
+    })()
   }
   return soundFontPromise
 }

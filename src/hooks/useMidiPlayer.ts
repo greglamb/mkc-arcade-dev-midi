@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Sequencer } from 'spessasynth_lib'
-import { ensureAudioContext, ensureSynth, prefetchSoundFont } from '../lib/audioEngine'
+import {
+  ensureAudioContext,
+  ensureSynth,
+  prefetchSoundFont,
+  subscribeSoundFontProgress,
+  type SoundFontProgress,
+} from '../lib/audioEngine'
 import { sanitizeMidi } from '../lib/midiSanitize'
 
 interface UseMidiPlayerResult {
@@ -9,6 +15,7 @@ interface UseMidiPlayerResult {
   error: string
   elapsedMs: number
   durationMs: number
+  soundFontProgress: SoundFontProgress
   play: () => Promise<void>
   pause: () => void
   restart: () => Promise<void>
@@ -21,16 +28,23 @@ export function useMidiPlayer(rawBuffer: ArrayBuffer | null): UseMidiPlayerResul
   const [error, setError] = useState('')
   const [elapsedMs, setElapsedMs] = useState(0)
   const [durationMs, setDurationMs] = useState(0)
+  const [soundFontProgress, setSoundFontProgress] = useState<SoundFontProgress>({
+    loaded: 0,
+    total: 0,
+    done: false,
+  })
 
   const sequencerRef = useRef<Sequencer | null>(null)
   const rafRef = useRef<number | null>(null)
   const cleanedBufferRef = useRef<Uint8Array | null>(null)
 
   useEffect(() => {
+    const unsubscribe = subscribeSoundFontProgress(setSoundFontProgress)
     prefetchSoundFont().catch((caught) => {
       const message = caught instanceof Error ? caught.message : 'Failed to load piano sound.'
       setError(message)
     })
+    return unsubscribe
   }, [])
 
   useEffect(() => {
@@ -152,5 +166,16 @@ export function useMidiPlayer(rawBuffer: ArrayBuffer | null): UseMidiPlayerResul
     setElapsedMs(clamped)
   }, [durationMs])
 
-  return { isPlaying, isLoading, error, elapsedMs, durationMs, play, pause, restart, seek }
+  return {
+    isPlaying,
+    isLoading,
+    error,
+    elapsedMs,
+    durationMs,
+    soundFontProgress,
+    play,
+    pause,
+    restart,
+    seek,
+  }
 }
