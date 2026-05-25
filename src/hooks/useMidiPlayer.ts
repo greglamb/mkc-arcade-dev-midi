@@ -105,9 +105,11 @@ export function useMidiPlayer(rawBuffer: ArrayBuffer | null): UseMidiPlayerResul
 
       if (!sequencerRef.current) {
         const seq = new Sequencer(synth, { skipToFirstNoteOn: false })
+        seq.eventHandler.addEvent('songChange', 'useMidiPlayer-duration', () => {
+          setDurationMs(Math.round(seq.duration * 1000))
+        })
         seq.loadNewSongList([{ binary: cleaned.buffer as ArrayBuffer, fileName: 'preview.mid' }])
         sequencerRef.current = seq
-        setDurationMs(Math.round(seq.duration * 1000))
       }
 
       sequencerRef.current.play()
