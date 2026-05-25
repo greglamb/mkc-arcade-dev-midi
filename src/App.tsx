@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import './App.css'
 import {
   buildMakeCodeSongSnippet,
@@ -11,7 +11,10 @@ import { TracksPanel } from './components/TracksPanel'
 import { OutputPanel } from './components/OutputPanel'
 import { MakeCodeSongPreview } from './components/MakeCodeSongPreview'
 import { InstrumentRangeTable } from './components/InstrumentRangeTable'
-import { PlaybackPanel } from './components/PlaybackPanel'
+
+const PlaybackPanel = lazy(() =>
+  import('./components/PlaybackPanel').then((m) => ({ default: m.PlaybackPanel })),
+)
 
 function App() {
   const [parsedMidi, setParsedMidi] = useState<ParsedMidiSummary | null>(null)
@@ -129,7 +132,11 @@ function App() {
 
       <FileUploadPanel isLoading={isLoading} error={error} onFilesSelected={handleFilesSelected} />
 
-      {parsedMidi && <PlaybackPanel parsedMidi={parsedMidi} />}
+      {parsedMidi && (
+        <Suspense fallback={null}>
+          <PlaybackPanel parsedMidi={parsedMidi} />
+        </Suspense>
+      )}
 
       {parsedMidi && (
         <TracksPanel
