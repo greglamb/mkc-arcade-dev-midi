@@ -14,8 +14,10 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@tonejs/midi": "^2.0.28",
+    "midi-file": "^1.2.4",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "spessasynth_lib": "^4.3.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
