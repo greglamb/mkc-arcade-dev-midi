@@ -62,8 +62,13 @@ export function MakeCodeSongPreview({ songHex }: MakeCodeSongPreviewProps) {
   const requestIdRef = useRef(1)
 
   const [lastEvent, setLastEvent] = useState('Waiting for editor...')
+  const [isLoading, setIsLoading] = useState(true)
 
   const { assetId, files } = useMemo(() => buildAssetEditorFiles(songHex), [songHex])
+
+  useEffect(() => {
+    setIsLoading(true)
+  }, [assetId])
 
   const postMessage = useCallback((message: Record<string, unknown>) => {
     const targetWindow = iframeRef.current?.contentWindow
@@ -93,6 +98,7 @@ export function MakeCodeSongPreview({ songHex }: MakeCodeSongPreviewProps) {
       if ('kind' in data && data.type === 'event') {
         if (data.kind === 'ready') {
           setLastEvent('Asset editor ready')
+          setIsLoading(false)
           openSongAsset();
         } else if (data.kind === 'done-clicked') {
           setLastEvent('Asset editor emitted done-clicked event')
@@ -119,14 +125,21 @@ export function MakeCodeSongPreview({ songHex }: MakeCodeSongPreviewProps) {
         <h2>MakeCode Asset Editor Preview</h2>
         <p>{lastEvent}</p>
       </div>
-      <iframe
-        key={assetId}
-        ref={iframeRef}
-        title="MakeCode Asset Editor Preview"
-        src={ASSET_EDITOR_URL}
-        className="preview-iframe"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-      />
+      <div className="preview-iframe-wrap">
+        <iframe
+          key={assetId}
+          ref={iframeRef}
+          title="MakeCode Asset Editor Preview"
+          src={ASSET_EDITOR_URL}
+          className="preview-iframe"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+        />
+        {isLoading && (
+          <div className="preview-iframe-overlay" role="status" aria-live="polite">
+            Updating preview…
+          </div>
+        )}
+      </div>
     </section>
   )
 }
