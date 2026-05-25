@@ -24,6 +24,7 @@ type BuildSongOptions = {
 
 export type ParsedMidiSummary = {
     fileNames: string[]
+    files: { name: string; buffer: ArrayBuffer }[]
     beatsPerMinute: number
     beatsPerMeasure: number
     tracks: MidiTrackSummary[]
@@ -86,6 +87,7 @@ export const parseMidi = async (file: File): Promise<ParsedMidiSummary> => {
 
     return {
         fileNames: [file.name],
+        files: [{ name: file.name, buffer: arrayBuffer }],
         beatsPerMinute,
         beatsPerMeasure,
         tracks,
@@ -118,6 +120,7 @@ export const parseMidiFiles = async (files: File[]): Promise<ParsedMidiSummary> 
 
     return {
         fileNames: parsedFiles.flatMap((parsed) => parsed.fileNames),
+        files: parsedFiles.flatMap((parsed) => parsed.files),
         beatsPerMinute: first.beatsPerMinute,
         beatsPerMeasure: first.beatsPerMeasure,
         tracks: mergedTracks,
