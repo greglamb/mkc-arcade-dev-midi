@@ -532,3 +532,20 @@ textarea {
   font-size: 0.95rem;
   opacity: 0.85;
 }
+
+.playback-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.playback-keyboard .piano-range {
+  max-width: 100%;
+}
+
+.playback-keyboard-caption {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}

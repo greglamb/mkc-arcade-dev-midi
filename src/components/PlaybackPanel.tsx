@@ -1,9 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { type ParsedMidiSummary } from '../lib/makecodeSong'
 import { useMidiPlayer } from '../hooks/useMidiPlayer'
+import { PianoRange } from './PianoRange'
 
 interface PlaybackPanelProps {
   parsedMidi: ParsedMidiSummary
+}
+
+// Full 88-key piano window (A0–C8) so any piano recording fits.
+const PIANO_LO = 21
+const PIANO_HI = 108
+
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+function noteName(midi: number): string {
+  const octave = Math.floor(midi / 12) - 1
+  return `${NOTE_NAMES[((midi % 12) + 12) % 12]}${octave}`
 }
 
 function formatTime(ms: number): string {
@@ -35,6 +47,14 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
   } = useMidiPlayer(selected?.buffer ?? null)
 
   const [scrubMs, setScrubMs] = useState<number | null>(null)
+
+  const noteRange = useMemo(() => {
+    const tracks = parsedMidi.tracks.filter((track) => track.sourceFileName === selected?.name)
+    if (!tracks.length) return null
+    const lo = Math.min(...tracks.map((track) => track.minMidiNote))
+    const hi = Math.max(...tracks.map((track) => track.maxMidiNote))
+    return { lo, hi }
+  }, [parsedMidi.tracks, selected?.name])
 
   if (!parsedMidi.files.length) return null
 
@@ -108,6 +128,15 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
           {formatTime(displayedMs)} / {formatTime(durationMs)}
         </span>
       </div>
+
+      {noteRange && (
+        <div className="playback-keyboard">
+          <PianoRange lo={noteRange.lo} hi={noteRange.hi} displayLo={PIANO_LO} displayHi={PIANO_HI} />
+          <p className="playback-keyboard-caption">
+            Notes used: {noteName(noteRange.lo)}–{noteName(noteRange.hi)} (MIDI {noteRange.lo}–{noteRange.hi})
+          </p>
+        </div>
+      )}
 
       {!error && !soundFontProgress.done && soundFontProgress.total > 0 && (
         <p className="status">
