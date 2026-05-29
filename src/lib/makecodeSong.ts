@@ -12,6 +12,7 @@ export type MidiTrackSummary = {
     channel: number | null
     minMidiNote: number
     maxMidiNote: number
+    midiNotes: number[]
     notes: NoteEvent[]
 }
 
@@ -52,6 +53,82 @@ export const MAKECODE_MELODIC_INSTRUMENT_PRESETS = MAKECODE_INSTRUMENT_PRESETS.f
     return !track?.drums
 })
 
+// Documented playable MIDI range per melodic instrument (real MIDI note numbers).
+// Mirrors the recommended ranges shown in InstrumentRangeTable. Keyed by preset id
+// (which equals the instrument name, e.g. "Dog").
+export const MELODIC_INSTRUMENT_RANGES: Record<string, { lo: number; hi: number }> = {
+    Dog: { lo: 51, hi: 91 },
+    Duck: { lo: 51, hi: 91 },
+    Cat: { lo: 63, hi: 103 },
+    Fish: { lo: 39, hi: 79 },
+    Car: { lo: 51, hi: 91 },
+    Computer: { lo: 27, hi: 67 },
+    Burger: { lo: 27, hi: 67 },
+    Cherry: { lo: 39, hi: 79 },
+    Lemon: { lo: 27, hi: 67 },
+}
+
+export type TrackRangeReport = { below: number; above: number; lo: number; hi: number }
+
+// Counts how many of a track's notes fall outside the chosen instrument's
+// documented range after applying a whole-octave transpose. Compares raw MIDI
+// note numbers against the documented range (octave-scale guidance; the encoder
+// adds a ~1-semitone offset internally, so boundary notes may differ by one).
+// Returns null when the preset has no documented range (e.g. drum/unknown).
+export const analyzeTrackRange = (
+    midiNotes: number[],
+    presetId: string | undefined,
+    transposeOctaves: number,
+): TrackRangeReport | null => {
+    if (!presetId) return null
+    const range = MELODIC_INSTRUMENT_RANGES[presetId]
+    if (!range) return null
+
+    const shift = transposeOctaves * 12
+    let below = 0
+    let above = 0
+    for (const note of midiNotes) {
+        const value = note + shift
+        if (value < range.lo) below++
+        else if (value > range.hi) above++
+    }
+    return { below, above, lo: range.lo, hi: range.hi }
+}
+
+// Finds the whole-octave melodic transpose (within [minOctave, maxOctave]) that
+// minimizes total out-of-range notes across all melodic tracks, each measured
+// against its own instrument. Returns null when the current transpose is already
+// as good as it gets (so the UI only nudges when there's a real improvement).
+export const suggestMelodicTranspose = (
+    tracks: { midiNotes: number[]; presetId: string | undefined }[],
+    currentTranspose: number,
+    minOctave = -4,
+    maxOctave = 4,
+): number | null => {
+    const countOutOfRange = (shift: number) =>
+        tracks.reduce((sum, track) => {
+            const report = analyzeTrackRange(track.midiNotes, track.presetId, shift)
+            return sum + (report ? report.below + report.above : 0)
+        }, 0)
+
+    const currentCount = countOutOfRange(currentTranspose)
+    if (currentCount === 0) return null
+
+    let best = currentTranspose
+    let bestCount = currentCount
+    for (let shift = minOctave; shift <= maxOctave; shift++) {
+        if (shift === currentTranspose) continue
+        const count = countOutOfRange(shift)
+        const closer = Math.abs(shift - currentTranspose) < Math.abs(best - currentTranspose)
+        if (count < bestCount || (count === bestCount && closer)) {
+            best = shift
+            bestCount = count
+        }
+    }
+
+    return bestCount < currentCount ? best : null
+}
+
 export const parseMidi = async (file: File): Promise<ParsedMidiSummary> => {
     const arrayBuffer = await file.arrayBuffer()
     const midi = new Midi(arrayBuffer)
@@ -75,6 +152,7 @@ export const parseMidi = async (file: File): Promise<ParsedMidiSummary> => {
             channel,
             minMidiNote: Math.min(...midiNotes),
             maxMidiNote: Math.max(...midiNotes),
+            midiNotes,
             notes: extractNoteEvents(midi, index, false),
         })
 

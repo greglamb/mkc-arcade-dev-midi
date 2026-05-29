@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { type ParsedMidiSummary } from '../lib/makecodeSong'
+import { MELODIC_INSTRUMENT_RANGES, type ParsedMidiSummary } from '../lib/makecodeSong'
 import { useMidiPlayer } from '../hooks/useMidiPlayer'
-import { PianoRange } from './PianoRange'
+import { PianoRange, type RangeMarker } from './PianoRange'
 
 interface PlaybackPanelProps {
   parsedMidi: ParsedMidiSummary
+  instrumentAssignments: Record<number, string>
+  drumTrackIds: Set<number>
+  transposeOctaves: number
 }
 
 // Full 88-key piano window (A0–C8) so any piano recording fits.
@@ -25,7 +28,12 @@ function formatTime(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
-export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
+export function PlaybackPanel({
+  parsedMidi,
+  instrumentAssignments,
+  drumTrackIds,
+  transposeOctaves,
+}: PlaybackPanelProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   useEffect(() => {
@@ -48,13 +56,49 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
 
   const [scrubMs, setScrubMs] = useState<number | null>(null)
 
-  const noteRange = useMemo(() => {
-    const tracks = parsedMidi.tracks.filter((track) => track.sourceFileName === selected?.name)
-    if (!tracks.length) return null
-    const lo = Math.min(...tracks.map((track) => track.minMidiNote))
-    const hi = Math.max(...tracks.map((track) => track.maxMidiNote))
-    return { lo, hi }
-  }, [parsedMidi.tracks, selected?.name])
+  const fileTracks = useMemo(
+    () => parsedMidi.tracks.filter((track) => track.sourceFileName === selected?.name),
+    [parsedMidi.tracks, selected?.name],
+  )
+
+  // Melodic tracks of the selected file that map to a known instrument range.
+  const melodicTracks = useMemo(
+    () =>
+      fileTracks.filter(
+        (track) =>
+          !drumTrackIds.has(track.id) &&
+          instrumentAssignments[track.id] &&
+          MELODIC_INSTRUMENT_RANGES[instrumentAssignments[track.id]],
+      ),
+    [fileTracks, drumTrackIds, instrumentAssignments],
+  )
+
+  // Conversion-result view: notes are shifted by the melodic transpose to show
+  // where they actually land, and brackets sit at each instrument's true range.
+  // Notes spilling past a bracket are what convert out of range.
+  const displayedRange = useMemo(() => {
+    const shift = transposeOctaves * 12
+    if (melodicTracks.length) {
+      const lo = Math.min(...melodicTracks.map((track) => track.minMidiNote)) + shift
+      const hi = Math.max(...melodicTracks.map((track) => track.maxMidiNote)) + shift
+      return { lo, hi }
+    }
+    if (!fileTracks.length) return null
+    return {
+      lo: Math.min(...fileTracks.map((track) => track.minMidiNote)),
+      hi: Math.max(...fileTracks.map((track) => track.maxMidiNote)),
+    }
+  }, [melodicTracks, fileTracks, transposeOctaves])
+
+  const rangeMarkers = useMemo<RangeMarker[]>(
+    () =>
+      melodicTracks.map((track) => {
+        const presetId = instrumentAssignments[track.id]
+        const range = MELODIC_INSTRUMENT_RANGES[presetId]
+        return { lo: range.lo, hi: range.hi, label: `${track.name} → ${presetId}` }
+      }),
+    [melodicTracks, instrumentAssignments],
+  )
 
   if (!parsedMidi.files.length) return null
 
@@ -129,11 +173,21 @@ export function PlaybackPanel({ parsedMidi }: PlaybackPanelProps) {
         </span>
       </div>
 
-      {noteRange && (
+      {displayedRange && (
         <div className="playback-keyboard">
-          <PianoRange lo={noteRange.lo} hi={noteRange.hi} displayLo={PIANO_LO} displayHi={PIANO_HI} />
+          <PianoRange
+            lo={displayedRange.lo}
+            hi={displayedRange.hi}
+            displayLo={PIANO_LO}
+            displayHi={PIANO_HI}
+            markers={rangeMarkers}
+          />
           <p className="playback-keyboard-caption">
-            Notes used: {noteName(noteRange.lo)}–{noteName(noteRange.hi)} (MIDI {noteRange.lo}–{noteRange.hi})
+            {rangeMarkers.length > 0 && transposeOctaves !== 0
+              ? `After ${transposeOctaves > 0 ? '+' : ''}${transposeOctaves} oct, notes land at ${noteName(displayedRange.lo)}–${noteName(displayedRange.hi)} · brackets = each track’s instrument range`
+              : rangeMarkers.length > 0
+                ? `Notes used: ${noteName(displayedRange.lo)}–${noteName(displayedRange.hi)} · brackets = each track’s instrument range`
+                : `Notes used: ${noteName(displayedRange.lo)}–${noteName(displayedRange.hi)} (MIDI ${displayedRange.lo}–${displayedRange.hi})`}
           </p>
         </div>
       )}

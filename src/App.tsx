@@ -134,7 +134,12 @@ function App() {
 
       {parsedMidi && (
         <Suspense fallback={null}>
-          <PlaybackPanel parsedMidi={parsedMidi} />
+          <PlaybackPanel
+            parsedMidi={parsedMidi}
+            instrumentAssignments={instrumentAssignments}
+            drumTrackIds={drumTrackIds}
+            transposeOctaves={transposeOctaves}
+          />
         </Suspense>
       )}
 

@@ -1,5 +1,9 @@
 import { useMemo } from 'react'
-import { type ParsedMidiSummary } from '../lib/makecodeSong'
+import {
+  MAKECODE_MELODIC_INSTRUMENT_PRESETS,
+  suggestMelodicTranspose,
+  type ParsedMidiSummary,
+} from '../lib/makecodeSong'
 import { TrackCard } from './TrackCard'
 import { TransposeControls } from './TransposeControls'
 
@@ -37,6 +41,16 @@ export function TracksPanel({
     [parsedMidi],
   )
 
+  const transposeSuggestion = useMemo(() => {
+    const melodic = parsedMidi.tracks
+      .filter((track) => !drumTrackIds.has(track.id))
+      .map((track) => ({
+        midiNotes: track.midiNotes,
+        presetId: instrumentAssignments[track.id] || MAKECODE_MELODIC_INSTRUMENT_PRESETS[0].id,
+      }))
+    return suggestMelodicTranspose(melodic, transposeOctaves)
+  }, [parsedMidi.tracks, drumTrackIds, instrumentAssignments, transposeOctaves])
+
   return (
     <section className="panel tracks-panel">
       <div className="panel-head">
@@ -56,6 +70,14 @@ export function TracksPanel({
         onBeatsPerMinuteChange={onBeatsPerMinuteChange}
       />
 
+      {transposeSuggestion !== null && (
+        <p className="transpose-suggestion">
+          <i className="fa-solid fa-lightbulb" aria-hidden="true" /> Tip: set melodic transpose to{' '}
+          {transposeSuggestion > 0 ? '+' : ''}
+          {transposeSuggestion} octave{Math.abs(transposeSuggestion) === 1 ? '' : 's'} to fit more notes in range.
+        </p>
+      )}
+
       <div className="track-grid">
         {parsedMidi.tracks.map((track) => (
           <TrackCard
@@ -63,6 +85,7 @@ export function TracksPanel({
             track={track}
             isDrum={drumTrackIds.has(track.id)}
             instrumentPresetId={instrumentAssignments[track.id]}
+            transposeOctaves={transposeOctaves}
             onDrumToggle={onDrumToggle}
             onInstrumentChange={onInstrumentChange}
           />
