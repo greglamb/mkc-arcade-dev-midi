@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { PianoRange } from './PianoRange'
 
 interface InstrumentInfo {
   name: string
@@ -95,33 +96,40 @@ export function InstrumentRangeTable() {
               <div className="drum-header">
                 <h3>Melodic Instruments</h3>
               </div>
-              <table className="instrument-table">
+              <table className="instrument-table instrument-table--melodic">
                 <thead>
                   <tr>
                     <th>Instrument</th>
                     <th>Note Range</th>
                     <th>MIDI Notes</th>
                     <th>Download</th>
+                    <th className="piano-range-col">Piano Range</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {melodicInstruments.map(instrument => (
-                    <tr key={instrument.name}>
-                      <td>{instrument.name}</td>
-                      <td>{instrument.noteRange}</td>
-                      <td>{instrument.midiRange}</td>
-                      <td>
-                        <a
-                          href={`./${instrument.name}-samples.zip`}
-                          download
-                          className="download-link"
-                          title={`Download ${instrument.name} samples`}
-                        >
-                          <i className="fas fa-download"></i> Samples
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
+                  {melodicInstruments.map(instrument => {
+                    const [lo, hi] = instrument.midiRange.split('-').map(Number)
+                    return (
+                      <tr key={instrument.name}>
+                        <td>{instrument.name}</td>
+                        <td>{instrument.noteRange}</td>
+                        <td>{instrument.midiRange}</td>
+                        <td>
+                          <a
+                            href={`./${instrument.name}-samples.zip`}
+                            download
+                            className="download-link"
+                            title={`Download ${instrument.name} samples`}
+                          >
+                            <i className="fas fa-download"></i> Samples
+                          </a>
+                        </td>
+                        <td className="piano-range-col">
+                          <PianoRange lo={lo} hi={hi} />
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -138,7 +146,7 @@ export function InstrumentRangeTable() {
                   <i className="fas fa-download"></i> Download All
                 </a>
               </div>
-              <table className="instrument-table">
+              <table className="instrument-table instrument-table--drums">
                 <thead>
                   <tr>
                     <th>Drum Sound</th>

@@ -340,8 +340,8 @@ textarea {
 
 .instrument-tables {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 2rem;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
 }
 
 .table-container {
@@ -415,6 +415,57 @@ textarea {
 
 .play-button i {
   width: 0.9em;
+}
+
+/* melodic piano-range column: keep text columns tight, give the keyboard the rest */
+.instrument-table--melodic th:not(.piano-range-col),
+.instrument-table--melodic td:not(.piano-range-col) {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.piano-range-col {
+  width: 100%;
+  min-width: 320px;
+}
+
+.instrument-table--drums {
+  max-width: 640px;
+}
+
+.piano-range {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+}
+
+.piano-white {
+  fill: #fff;
+  stroke: #b8c2c6;
+  stroke-width: 0.5;
+}
+
+.piano-white.piano-in {
+  fill: #bfe3ec;
+}
+
+.piano-black {
+  fill: #2b2b2b;
+}
+
+.piano-black.piano-in {
+  fill: #085f74;
+}
+
+.piano-middle-c-dot {
+  fill: #d4453b;
+}
+
+.piano-middle-c-label {
+  fill: var(--text);
+  font-size: 9px;
+  font-weight: 700;
 }
 
 @media (max-width: 760px) {
