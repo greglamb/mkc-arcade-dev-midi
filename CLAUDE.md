@@ -4,7 +4,7 @@ Project notes for future Claude sessions. Keep concise; prefer code over prose.
 
 ## What this project is
 
-A browser-based tool that converts MIDI files into [MakeCode Arcade](https://arcade.makecode.com/) song hex blobs. Forked from [riknoll/makecode-midi-converter](https://github.com/riknoll/makecode-midi-converter); deployed to GitHub Pages at https://greglamb.github.io/makecode-midi-converter/.
+A browser-based tool that converts MIDI files into [MakeCode Arcade](https://arcade.makecode.com/) song hex blobs. Forked from [riknoll/makecode-midi-converter](https://github.com/riknoll/makecode-midi-converter); deployed to GitHub Pages at https://greglamb.github.io/mkc-arcade-dev-midi/.
 
 The user's primary input is MIDI recorded on a **Yamaha CLP-745** digital piano. Two distinct outputs:
 1. **Preview player** — plays the MIDI as recorded, using the Salamander C5 Light piano SoundFont (`public/SalC5Light2.sf2`, 24 MB).
@@ -85,7 +85,7 @@ There are very few unit tests by intent — only `midiSanitize.test.ts`. The res
 - GitHub Actions workflow: `.github/workflows/deploy.yml`
 - Pages source: "GitHub Actions" (not branch-based)
 - Pushes to `main` auto-build and deploy
-- Vite `base: './'` produces relative asset paths that work at both `localhost:5173/` and `greglamb.github.io/makecode-midi-converter/`
+- Vite `base: './'` produces relative asset paths that work at both `localhost:5173/` and `greglamb.github.io/mkc-arcade-dev-midi/`
 
 The `gh-pages` npm package and `predeploy`/`deploy` scripts in `package.json` are leftover from upstream; they're not the live deploy path and can be ignored (or removed if they cause confusion).
 

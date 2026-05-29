@@ -20,10 +20,21 @@ type MakeCodeSongPreviewProps = {
   songHex: string
 }
 
+// FNV-1a hash over the full hex so any change (including deeper tracks)
+// yields a new assetId. Slicing the hex front-only misses non-first tracks.
+const hashHex = (hex: string): string => {
+  let hash = 0x811c9dc5
+  for (let i = 0; i < hex.length; i++) {
+    hash ^= hex.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0') || 'empty'
+}
+
 const buildAssetEditorFiles = (
   songHex: string,
 ): { assetId: string; files: Record<string, string> } => {
-  const assetId = `preview_song_${songHex.slice(0, 16) || 'empty'}`
+  const assetId = `preview_song_${hashHex(songHex)}`
 
   const jres = {
     [assetId]: {
