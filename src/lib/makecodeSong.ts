@@ -385,7 +385,7 @@ export const buildMakeCodeSongSnippet = (
     const bpmLabel =
         beatsPerMinute === parsed.beatsPerMinute ? '' : `\n// Tempo set to ${beatsPerMinute} BPM`
 
-    return `// Generated from ${fileLabel}${melodicTransposeLabel}${drumTransposeLabel}${bpmLabel}\nconst song = music.createSong(hex\`${songHex}\`)\nmusic.play(song, music.PlaybackMode.UntilDone)`
+    return `// Generated from ${fileLabel}${melodicTransposeLabel}${drumTransposeLabel}${bpmLabel}\nconst song = music.createSong(hex\`${songHex}\`)\nmusic.play(song, music.PlaybackMode.LoopingInBackground)`
 }
 
 function isBlackKey(noteNumber: number) {
