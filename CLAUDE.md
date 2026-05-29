@@ -54,12 +54,27 @@ The MakeCode conversion path doesn't go through this sanitizer — MakeCode igno
   - `Sequencer.duration` is **not synchronously available** after `loadNewSongList`. Read it from the `songChange` event (already wired).
   - rAF loop polls `seq.currentTime`; pauses while user is scrubbing (`scrubMs` overrides displayed elapsed).
 - `PlaybackPanel.tsx` is **lazy-loaded** via `React.lazy` in `App.tsx` to keep initial JS small (~250 KB vs ~510 KB unsplit).
+- `PianoRange.tsx` — reusable inline-SVG keyboard. Defaults to a C1–C8 window (instrument table); the preview passes the full 88-key A0–C8 plus `markers` (labeled brackets drawn below the keys). Highlight is clamped to the display window, so notes pushed off the piano pin to the edge.
+
+## Range analysis & the transpose math
+
+`makecodeSong.ts` exports the pure helpers behind the out-of-range warning (tested in `rangeAnalysis.test.ts`):
+
+- `MELODIC_INSTRUMENT_RANGES` — numeric MIDI `{lo,hi}` per melodic instrument, keyed by preset id (= instrument name). Mirrors the documented ranges in `InstrumentRangeTable`; that table keeps its own display strings, so keep the two in sync if ranges ever change.
+- `analyzeTrackRange(midiNotes, presetId, transposeOctaves)` → `{below, above, lo, hi}` count of notes outside range. Returns `null` for drum/unknown presets.
+- `suggestMelodicTranspose(tracks, current)` → best whole-octave shift in ±4 minimizing total out-of-range, or `null` if current is already optimal. Drives the "Tip:" line in `TracksPanel`.
+
+**The transpose math, stated once so nobody re-derives it.** The converter shifts a melodic note `n` by `shift = transposeOctaves * 12` before mapping it. A note is in range when `lo ≤ n + shift ≤ hi`. Two equivalent views (we use both):
+- **Warning / `analyzeTrackRange`**: compares `n + shift` against `[lo, hi]`.
+- **Preview keyboard (`PlaybackPanel`)**: the "conversion-result" view — it shifts the *displayed notes* by `shift` and draws the bracket at the instrument's *raw* `[lo, hi]`. (We deliberately rejected the algebraically-equivalent "shift the bracket by `−shift`, keep notes raw" view: with a large default transpose the bracket flew far from the notes and read as wrong.)
+
+Comparison is against the **documented** ranges in real MIDI — octave-scale guidance, not sample-accurate (the encoder adds a ~1-semitone offset we never fully pinned down, so boundary notes can be off by one). The preview *audio* still plays the file as recorded; only the keyboard shows the converted mapping.
 
 ## MakeCode asset editor iframe
 
 Lives in `MakeCodeSongPreview.tsx`, loads `https://arcade.makecode.com/v4.1.4--asseteditor` in an iframe and exchanges postMessages.
 
-**The asset editor ignores repeat `open` messages**, even with a different `assetId`. To refresh the preview when the song changes, we **remount the iframe** via `key={assetId}` where `assetId` is derived from a slice of the hex. A loading overlay shows "Updating preview…" until the next `ready` event fires.
+**The asset editor ignores repeat `open` messages**, even with a different `assetId`. To refresh the preview when the song changes, we **remount the iframe** via `key={assetId}` where `assetId` is an FNV-1a hash of the *whole* song hex. (A hash of only the first N hex chars was the original bug: changing a non-first track left those chars identical, so the key never changed and the preview went stale.) A loading overlay shows "Updating preview…" until the next `ready` event fires.
 
 Don't try to "fix" this by adding more postMessage protocol — we already tried that. Iframe remount is the working solution.
 
